@@ -1,53 +1,56 @@
 import tkinter as tk
 import numpy as np
+import random
 
 LARGE_FONT = ("Roboto", 20)
-
+TICKET_FONT = ("Roboto", 240)
 
 class Lottery(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("Loterij")
+        self.ticket_numbers = np.array([])
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, PageOne):
+        for F in (PageTicketRanges, PageIncome, PageTicketDraw):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.ticket_ranges = []
 
-        self.show_frame(StartPage)
+        self.show_frame(PageTicketRanges)
 
     def show_frame(self, cont):
         frame = self.frames[cont]
+        frame.event_generate("<<ShowFrame>>")
         frame.tkraise()
 
 
-class StartPage(tk.Frame):
+class PageTicketRanges(tk.Frame):
 
-    def show_ranges(self):
-
-        self.ticket_numbers = np.array([])
-        self.ticket_ranges = []
+    def create_tickets(self):
+        ticket_ranges = []
         for entry in self.entry_ticket_ranges:
             from_value = entry[0].get()
             to_value = entry[1].get()
-            if(from_value!='' and to_value!=''):
-                self.ticket_ranges.append([int(from_value), int(to_value)])
+            if from_value != '' and to_value != '':
+                ticket_ranges.append([int(from_value), int(to_value)])
 
-        for range in self.ticket_ranges:
-            self.ticket_numbers = np.append(self.ticket_numbers, np.arange(range[0], range[1] + 1))
-        print(self.ticket_numbers)
+        for ticket_range in ticket_ranges:
+            self.controller.ticket_numbers = np.append(self.controller.ticket_numbers,
+                                                       np.arange(ticket_range[0], ticket_range[1] + 1))
+
+        self.controller.show_frame(PageIncome)
 
     def __init__(self, parent, controller):
+        self.controller = controller
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Start page", font=LARGE_FONT)
         colors = ['Set 1', 'Set 2', 'Set 3', 'Set 4', 'Set 5', 'Set 6']
         self.entry_ticket_ranges = []
         for c in colors:
@@ -61,24 +64,77 @@ class StartPage(tk.Frame):
             entry_from.pack(side=tk.LEFT)
             entry_to.pack(side=tk.RIGHT)
 
-        btn_start = tk.Button(self, text='Start loterij',
-                              command=self.show_ranges)
-        #btn_start = tk.Button(self, text='Start loterij',
-        #                      command=lambda: controller.show_frame(PageOne))
+        btn_start = tk.Button(self, text='Bereken inkomsten >',
+                              command=self.create_tickets)
         btn_start.pack()
 
 
-class PageOne(tk.Frame):
+class PageIncome(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Loterij pagina", font=LARGE_FONT)
-        label.pack(pady=10, padx=10)
+        self.controller = controller
+        self.bind("<<ShowFrame>>", self.on_show_frame)
+        self.ticket_numbers = self.controller.ticket_numbers
 
-        btn_exit = tk.Button(self, text='Terug naar ticket verkoop',
-                             command=lambda: controller.show_frame(StartPage))
+        btn_exit = tk.Button(self, text='< Terug naar lot sets',
+                             command=lambda: controller.show_frame(PageTicketRanges))
         btn_exit.pack()
 
+        self.label = tk.Label(self, text="Geen loten verkocht", font=LARGE_FONT)
+        self.label.pack(pady=10, padx=10)
+
+        self.entry_price = tk.Entry(self, relief=tk.SUNKEN, width=50)
+        self.entry_price.pack()
+
+        btn_calculate = tk.Button(self, text='Bereken inkomsten',
+                                  command=self.calculate_income)
+        btn_calculate.pack()
+
+        self.label_income = tk.Label(self, text="Geen inkomsten", font=LARGE_FONT)
+        self.label_income.pack(pady=10, padx=10)
+
+        btn_start = tk.Button(self, text='Start loterij >',
+                              command=lambda: controller.show_frame(PageTicketDraw))
+        btn_start.pack()
+
+    def on_show_frame(self, event):
+        self.ticket_numbers = self.controller.ticket_numbers
+        qty_tickets = self.ticket_numbers.shape[0]
+        self.label['text'] = 'Aantal verkochte loten: ' + str(qty_tickets)
+
+    def calculate_income(self):
+        qty_tickets = self.ticket_numbers.shape[0]
+        amt_price = float(self.entry_price.get())
+        amt_income = qty_tickets * amt_price
+        self.label_income['text'] = 'Inkomsten loten verkoop: ' + str(amt_income)
+
+
+class PageTicketDraw(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.label = tk.Label(self, text="99", font=TICKET_FONT)
+        self.label.pack(pady=10, padx=10)
+
+        self.btn_draw = tk.Button(self, text='Volgende lot',
+                                  command=self.draw_ticket)
+        self.btn_draw.pack()
+
+    def draw_ticket(self):
+        qty_tickets = self.controller.ticket_numbers.shape[0]
+        if qty_tickets > 0:
+            idx_ticket = random.randint(0, qty_tickets - 1)
+            drawn_ticket = self.controller.ticket_numbers[idx_ticket]
+            self.controller.ticket_numbers = np.delete(self.controller.ticket_numbers,
+                                                       idx_ticket)
+            self.label['text'] = int(drawn_ticket)
+        else:
+            self.label['font'] = LARGE_FONT
+            self.label['text'] = 'De loten zijn op.'
+            self.btn_draw['text'] = 'Stop'
+            self.btn_draw['command'] = self.controller.destroy
 
 app = Lottery()
 app.mainloop()
