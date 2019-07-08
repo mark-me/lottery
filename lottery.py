@@ -31,6 +31,18 @@ class Lottery(tk.Tk):
         frame.event_generate("<<ShowFrame>>")
         frame.tkraise()
 
+    def money_validation(self, S):
+        if S in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ',']:
+            return True
+        self.bell()
+        return False
+
+    def integer_validation(self, S):
+        if S in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+            return True
+        self.bell()
+        return False
+
 
 class PageTicketRanges(tk.Frame):
 
@@ -52,12 +64,16 @@ class PageTicketRanges(tk.Frame):
         self.controller = controller
         tk.Frame.__init__(self, parent)
         colors = ['Set 1', 'Set 2', 'Set 3', 'Set 4', 'Set 5', 'Set 6']
+
+        vcmd = (self.register(controller.integer_validation), '%S')
         self.entry_ticket_ranges = []
         for c in colors:
             frame = tk.Frame(self)
             label = tk.Label(frame, text=c, relief=tk.RIDGE,  width=25)
-            entry_from = tk.Entry(frame, relief=tk.SUNKEN, width=50)
-            entry_to = tk.Entry(frame, relief=tk.SUNKEN, width=50)
+            entry_from = tk.Entry(frame, relief=tk.SUNKEN, width=50, justify='right',
+                                  validate='key', vcmd=vcmd)
+            entry_to = tk.Entry(frame, relief=tk.SUNKEN, width=50, justify='right',
+                                validate='key', vcmd=vcmd)
             self.entry_ticket_ranges.append([entry_from, entry_to])
             frame.pack(side=tk.TOP)
             label.pack(side=tk.LEFT)
@@ -84,7 +100,9 @@ class PageIncome(tk.Frame):
         self.label = tk.Label(self, text="Geen loten verkocht", font=LARGE_FONT)
         self.label.pack(pady=10, padx=10)
 
-        self.entry_price = tk.Entry(self, relief=tk.SUNKEN, width=50)
+        vcmd = (self.register(controller.money_validation), '%S')
+        self.entry_price = tk.Entry(self, relief=tk.SUNKEN, width=50, justify='right',
+                                    validate='key', vcmd=vcmd)
         self.entry_price.pack()
 
         btn_calculate = tk.Button(self, text='Bereken inkomsten',
@@ -105,9 +123,10 @@ class PageIncome(tk.Frame):
 
     def calculate_income(self):
         qty_tickets = self.ticket_numbers.shape[0]
-        amt_price = float(self.entry_price.get())
+        amt_price = float(self.entry_price.get().replace(',', '.'))
         amt_income = qty_tickets * amt_price
-        self.label_income['text'] = 'Inkomsten loten verkoop: ' + str(amt_income)
+        amt_income = ('%.2f' % amt_income).replace('.', ',')
+        self.label_income['text'] = 'Inkomsten loten verkoop : €' + amt_income
 
 
 class PageTicketDraw(tk.Frame):
