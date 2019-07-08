@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 import numpy as np
 import random
 
@@ -53,6 +54,11 @@ class PageTicketRanges(tk.Frame):
             to_value = entry[1].get()
             if from_value != '' and to_value != '':
                 ticket_ranges.append([int(from_value), int(to_value)])
+            elif from_value != '' and to_value == '':
+                ticket_ranges.append(int(from_value))
+            elif from_value == '' and to_value != '':
+                messagebox.showinfo("Fout", "Er kan niet alleen een eindpunt van een range worden opgegeven")
+            return
 
         for ticket_range in ticket_ranges:
             self.controller.ticket_numbers = np.append(self.controller.ticket_numbers,
@@ -63,13 +69,13 @@ class PageTicketRanges(tk.Frame):
     def __init__(self, parent, controller):
         self.controller = controller
         tk.Frame.__init__(self, parent)
-        colors = ['Set 1', 'Set 2', 'Set 3', 'Set 4', 'Set 5', 'Set 6']
+        range_sets = ['Set 1', 'Set 2', 'Set 3', 'Set 4', 'Set 5', 'Set 6']
 
         vcmd = (self.register(controller.integer_validation), '%S')
         self.entry_ticket_ranges = []
-        for c in colors:
+        for range_set in range_sets:
             frame = tk.Frame(self)
-            label = tk.Label(frame, text=c, relief=tk.RIDGE,  width=25)
+            label = tk.Label(frame, text=range_set, relief=tk.RIDGE,  width=25)
             entry_from = tk.Entry(frame, relief=tk.SUNKEN, width=50, justify='right',
                                   validate='key', vcmd=vcmd)
             entry_to = tk.Entry(frame, relief=tk.SUNKEN, width=50, justify='right',
