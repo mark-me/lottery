@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='Lottery',
     version='0.5',
-    packages=[''],
+    packages=['numpy', 'tkinter'],
     url='',
     license='',
     author='Mark Zwart',
