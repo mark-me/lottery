@@ -115,8 +115,14 @@ class PageTicketDraw(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.label = tk.Label(self, text="99", font=TICKET_FONT)
-        self.label.pack(pady=10, padx=10)
+        self.qty_draws = 0
+
+        self.label_draw_no = tk.Label(self, text="Klik op 'Volgende lot' ", font=LARGE_FONT)
+        self.label_draw_no.pack(pady=10, padx=10)
+
+        self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
+        self.label_ticket.pack(pady=10, padx=10)
+        #self.label_ticket.bind("<Button-1>", self.draw_ticket)
 
         self.btn_draw = tk.Button(self, text='Volgende lot',
                                   command=self.draw_ticket)
@@ -125,16 +131,19 @@ class PageTicketDraw(tk.Frame):
     def draw_ticket(self):
         qty_tickets = self.controller.ticket_numbers.shape[0]
         if qty_tickets > 0:
+            self.qty_draws = self.qty_draws + 1
+            self.label_draw_no['text'] = "Trekking " + str(self.qty_draws)
+
             idx_ticket = random.randint(0, qty_tickets - 1)
             drawn_ticket = self.controller.ticket_numbers[idx_ticket]
             self.controller.ticket_numbers = np.delete(self.controller.ticket_numbers,
                                                        idx_ticket)
-            self.label['text'] = int(drawn_ticket)
+            self.label_ticket['text'] = int(drawn_ticket)
         else:
-            self.label['font'] = LARGE_FONT
-            self.label['text'] = 'De loten zijn op.'
-            self.btn_draw['text'] = 'Stop'
-            self.btn_draw['command'] = self.controller.destroy
+            self.label_ticket['font'] = LARGE_FONT
+            self.label_ticket['text'] = 'De loten zijn op.'
+            self.label_ticket['text'] = 'Stop de loterij'
+            self.label_ticket['command'] = self.controller.destroy
 
 app = Lottery()
 app.mainloop()
