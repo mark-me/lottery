@@ -58,7 +58,7 @@ class PageTicketRanges(tk.Frame):
                 ticket_ranges.append(int(from_value))
             elif from_value == '' and to_value != '':
                 messagebox.showinfo("Fout", "Er kan niet alleen een eindpunt van een range worden opgegeven")
-            return
+                return
 
         for ticket_range in ticket_ranges:
             self.controller.ticket_numbers = np.append(self.controller.ticket_numbers,
@@ -142,9 +142,6 @@ class PageTicketDraw(tk.Frame):
         self.controller = controller
         self.qty_draws = 0
 
-        self.label_draw_no = tk.Label(self, text="Klik op 'Volgende lot' ", font=LARGE_FONT)
-        self.label_draw_no.pack(pady=10, padx=10)
-
         self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
         self.label_ticket.pack(pady=10, padx=10)
 
@@ -156,7 +153,6 @@ class PageTicketDraw(tk.Frame):
         qty_tickets = self.controller.ticket_numbers.shape[0]
         if qty_tickets > 0:
             self.qty_draws = self.qty_draws + 1
-            self.label_draw_no['text'] = "Trekking " + str(self.qty_draws)
 
             idx_ticket = random.randint(0, qty_tickets - 1)
             drawn_ticket = self.controller.ticket_numbers[idx_ticket]
