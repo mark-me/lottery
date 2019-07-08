@@ -122,7 +122,6 @@ class PageTicketDraw(tk.Frame):
 
         self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
         self.label_ticket.pack(pady=10, padx=10)
-        #self.label_ticket.bind("<Button-1>", self.draw_ticket)
 
         self.btn_draw = tk.Button(self, text='Volgende lot',
                                   command=self.draw_ticket)
