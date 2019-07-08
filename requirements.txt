@@ -1,2 +1,1 @@
-numpy
-tkinter
+Lottery==0.0.0
