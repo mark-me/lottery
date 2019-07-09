@@ -76,10 +76,7 @@ class PageTicketRanges(tk.Frame):
 
     def create_tickets(self):
 
-        if self.overlapping_ranges():
-            messagebox.showinfo("Fout", "Er kunnen geen overlappende ranges worden opgegeven")
-            return
-
+        # Create ticket ranges
         self.controller.ticket_numbers = np.array([])
         ticket_ranges = []
         for entry in self.entry_ticket_ranges:
@@ -93,23 +90,32 @@ class PageTicketRanges(tk.Frame):
                 messagebox.showinfo("Fout", "Er kan niet alleen een eindpunt van een range worden opgegeven")
                 return
 
+        # Create tickets
         for ticket_range in ticket_ranges:
             self.controller.ticket_numbers = np.append(self.controller.ticket_numbers,
                                                        np.arange(ticket_range[0], ticket_range[1] + 1))
+
+        if np.unique(self.controller.ticket_numbers).shape[0] != self.controller.ticket_numbers.shape[0]:
+            messagebox.showinfo("Fout", "Er kunnen geen overlappende ranges worden opgegeven")
+            return
 
         self.controller.show_frame(PageIncome)
 
     def overlapping_ranges(self):
         for entry1 in self.entry_ticket_ranges:
-            range1_from = int(entry1[0].get())
-            range1_to = int(entry1[1].get())
+            range1_from = entry1[0].get()
+            range1_to = entry1[1].get()
             for entry2 in self.entry_ticket_ranges:
-                range2_from = int(entry2[0].get())
-                range2_to = int(entry2[1].get())
-                if entry1 != entry2:
-                    from_iside = range2_from <= range1_from <= range2_to
-                    to_inside = range2_from <= range1_to <= range2_to
-                    if from_iside or to_inside:
+                range2_from = entry2[0].get()
+                range2_to = entry2[1].get()
+                if entry1 != entry2 and range2_from != '' and range2_to != '':
+                    from_inside = False
+                    to_inside = False
+                    if range1_from != '':
+                        from_inside = int(range2_from) <= int(range1_from) <= int(range2_to)
+                    if range1_to != '':
+                        to_inside = int(range2_from) <= int(range1_to) <= int(range2_to)
+                    if from_inside and to_inside:
                         return True
         return False
 
@@ -121,29 +127,31 @@ class PageIncome(tk.Frame):
         self.bind("<<ShowFrame>>", self.on_show_frame)
         self.ticket_numbers = self.controller.ticket_numbers
 
-        btn_exit = tk.Button(self, text='< Terug naar lot sets',
+        frame = tk.Frame(self)
+        frame.pack(side=tk.TOP)
+        btn_exit = tk.Button(frame, text='< Terug naar lot sets',
                              command=lambda: controller.show_frame(PageTicketRanges))
         btn_exit.grid(row=0, columnspan=3)
 
-        self.label = tk.Label(self, text="Geen loten verkocht", font=LARGE_FONT)
+        self.label = tk.Label(frame, text="Geen loten verkocht", font=LARGE_FONT)
         self.label.grid(row=1, columnspan=2)
 
-        self.label_price = tk.Label(self, text="Prijs per lot", relief=tk.RIDGE)
+        self.label_price = tk.Label(frame, text="Prijs per lot", relief=tk.RIDGE)
         self.label_price.grid(row=2, column=0)
 
         vcmd = (self.register(controller.money_validation), '%S')
-        self.entry_price = tk.Entry(self, relief=tk.SUNKEN, width=50, justify='right',
+        self.entry_price = tk.Entry(frame, relief=tk.SUNKEN, width=50, justify='right',
                                     validate='key', vcmd=vcmd)
         self.entry_price.grid(row=2, column=1)
 
-        btn_calculate = tk.Button(self, text='Bereken inkomsten',
+        btn_calculate = tk.Button(frame, text='Bereken inkomsten',
                                   command=self.calculate_income)
         btn_calculate.grid(row=3, column=1)
 
-        self.label_income = tk.Label(self, text="Geen inkomsten", font=LARGE_FONT)
+        self.label_income = tk.Label(frame, text="Geen inkomsten", font=LARGE_FONT)
         self.label_income.grid(row=4, columnspan=2)
 
-        btn_start = tk.Button(self, text='Start loterij >',
+        btn_start = tk.Button(frame, text='Start loterij >',
                               command=lambda: controller.show_frame(PageTicketDraw))
         btn_start.grid(row=5, column=1)
 
