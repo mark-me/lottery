@@ -101,23 +101,6 @@ class PageTicketRanges(tk.Frame):
 
         self.controller.show_frame(PageIncome)
 
-    def overlapping_ranges(self):
-        for entry1 in self.entry_ticket_ranges:
-            range1_from = entry1[0].get()
-            range1_to = entry1[1].get()
-            for entry2 in self.entry_ticket_ranges:
-                range2_from = entry2[0].get()
-                range2_to = entry2[1].get()
-                if entry1 != entry2 and range2_from != '' and range2_to != '':
-                    from_inside = False
-                    to_inside = False
-                    if range1_from != '':
-                        from_inside = int(range2_from) <= int(range1_from) <= int(range2_to)
-                    if range1_to != '':
-                        to_inside = int(range2_from) <= int(range1_to) <= int(range2_to)
-                    if from_inside and to_inside:
-                        return True
-        return False
 
 class PageIncome(tk.Frame):
 
