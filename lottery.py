@@ -47,26 +47,6 @@ class Lottery(tk.Tk):
 
 class PageTicketRanges(tk.Frame):
 
-    def create_tickets(self):
-        self.ticket_numbers = np.array([])
-        ticket_ranges = []
-        for entry in self.entry_ticket_ranges:
-            from_value = entry[0].get()
-            to_value = entry[1].get()
-            if from_value != '' and to_value != '':
-                ticket_ranges.append([int(from_value), int(to_value)])
-            elif from_value != '' and to_value == '':
-                ticket_ranges.append(int(from_value))
-            elif from_value == '' and to_value != '':
-                messagebox.showinfo("Fout", "Er kan niet alleen een eindpunt van een range worden opgegeven")
-                return
-
-        for ticket_range in ticket_ranges:
-            self.controller.ticket_numbers = np.append(self.controller.ticket_numbers,
-                                                       np.arange(ticket_range[0], ticket_range[1] + 1))
-
-        self.controller.show_frame(PageIncome)
-
     def __init__(self, parent, controller):
         self.controller = controller
         tk.Frame.__init__(self, parent)
@@ -87,9 +67,29 @@ class PageTicketRanges(tk.Frame):
             entry_from.pack(side=tk.LEFT)
             entry_to.pack(side=tk.RIGHT)
 
-        btn_start = tk.Button(self, text='Bereken inkomsten >',
+        btn_start = tk.Button(self, text='Ga naar berekenen inkomsten >',
                               command=self.create_tickets)
         btn_start.pack()
+
+    def create_tickets(self):
+        self.controller.ticket_numbers = np.array([])
+        ticket_ranges = []
+        for entry in self.entry_ticket_ranges:
+            from_value = entry[0].get()
+            to_value = entry[1].get()
+            if from_value != '' and to_value != '':
+                ticket_ranges.append([int(from_value), int(to_value)])
+            elif from_value != '' and to_value == '':
+                ticket_ranges.append(int(from_value))
+            elif from_value == '' and to_value != '':
+                messagebox.showinfo("Fout", "Er kan niet alleen een eindpunt van een range worden opgegeven")
+                return
+
+        for ticket_range in ticket_ranges:
+            self.controller.ticket_numbers = np.append(self.controller.ticket_numbers,
+                                                       np.arange(ticket_range[0], ticket_range[1] + 1))
+
+        self.controller.show_frame(PageIncome)
 
 
 class PageIncome(tk.Frame):
@@ -102,26 +102,29 @@ class PageIncome(tk.Frame):
 
         btn_exit = tk.Button(self, text='< Terug naar lot sets',
                              command=lambda: controller.show_frame(PageTicketRanges))
-        btn_exit.pack()
+        btn_exit.grid(row=0, column=1)
 
         self.label = tk.Label(self, text="Geen loten verkocht", font=LARGE_FONT)
-        self.label.pack(pady=10, padx=10)
+        self.label.grid(row=1, columnspan=2)
+
+        self.label_price = tk.Label(self, text="Prijs per lot", relief=tk.RIDGE)
+        self.label_price.grid(row=2, column=0)
 
         vcmd = (self.register(controller.money_validation), '%S')
         self.entry_price = tk.Entry(self, relief=tk.SUNKEN, width=50, justify='right',
                                     validate='key', vcmd=vcmd)
-        self.entry_price.pack()
+        self.entry_price.grid(row=2, column=1)
 
         btn_calculate = tk.Button(self, text='Bereken inkomsten',
                                   command=self.calculate_income)
-        btn_calculate.pack()
+        btn_calculate.grid(row=3, column=1)
 
         self.label_income = tk.Label(self, text="Geen inkomsten", font=LARGE_FONT)
-        self.label_income.pack(pady=10, padx=10)
+        self.label_income.grid(row=4, columnspan=2)
 
         btn_start = tk.Button(self, text='Start loterij >',
                               command=lambda: controller.show_frame(PageTicketDraw))
-        btn_start.pack()
+        btn_start.grid(row=5, column=1)
 
     def on_show_frame(self, event):
         self.ticket_numbers = self.controller.ticket_numbers
@@ -143,12 +146,12 @@ class PageTicketDraw(tk.Frame):
         self.controller = controller
         self.qty_draws = 0
 
-        self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
-        self.label_ticket.pack(pady=10, padx=10)
-
-        self.btn_draw = tk.Button(self, text='Volgende lot',
+        self.btn_draw = tk.Button(self, text='Trek lot',
                                   command=self.draw_ticket)
         self.btn_draw.pack()
+
+        self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
+        self.label_ticket.pack(pady=10, padx=10)
 
     def draw_ticket(self):
         qty_tickets = self.controller.ticket_numbers.shape[0]
