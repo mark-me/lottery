@@ -6,6 +6,7 @@ import random
 LARGE_FONT = ("Roboto", 20)
 TICKET_FONT = ("Roboto", 240)
 
+
 class Lottery(tk.Tk):
 
     def __init__(self, *args, **kwargs):
