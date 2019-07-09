@@ -52,6 +52,9 @@ class PageTicketRanges(tk.Frame):
         tk.Frame.__init__(self, parent)
         range_sets = ['Set 1', 'Set 2', 'Set 3', 'Set 4', 'Set 5', 'Set 6']
 
+        label = tk.Label(self, text="Geef lotensets op", font=LARGE_FONT)
+        label.pack(side=tk.TOP, fill="x", pady=10)
+
         vcmd = (self.register(controller.integer_validation), '%S')
         self.entry_ticket_ranges = []
         for range_set in range_sets:
@@ -69,9 +72,14 @@ class PageTicketRanges(tk.Frame):
 
         btn_start = tk.Button(self, text='Ga naar berekenen inkomsten >',
                               command=self.create_tickets)
-        btn_start.pack()
+        btn_start.pack(side=tk.BOTTOM)
 
     def create_tickets(self):
+
+        if self.overlapping_ranges():
+            messagebox.showinfo("Fout", "Er kunnen geen overlappende ranges worden opgegeven")
+            return
+
         self.controller.ticket_numbers = np.array([])
         ticket_ranges = []
         for entry in self.entry_ticket_ranges:
@@ -91,6 +99,19 @@ class PageTicketRanges(tk.Frame):
 
         self.controller.show_frame(PageIncome)
 
+    def overlapping_ranges(self):
+        for entry1 in self.entry_ticket_ranges:
+            range1_from = int(entry1[0].get())
+            range1_to = int(entry1[1].get())
+            for entry2 in self.entry_ticket_ranges:
+                range2_from = int(entry2[0].get())
+                range2_to = int(entry2[1].get())
+                if entry1 != entry2:
+                    from_iside = range2_from <= range1_from <= range2_to
+                    to_inside = range2_from <= range1_to <= range2_to
+                    if from_iside or to_inside:
+                        return True
+        return False
 
 class PageIncome(tk.Frame):
 
@@ -102,7 +123,7 @@ class PageIncome(tk.Frame):
 
         btn_exit = tk.Button(self, text='< Terug naar lot sets',
                              command=lambda: controller.show_frame(PageTicketRanges))
-        btn_exit.grid(row=0, column=1)
+        btn_exit.grid(row=0, columnspan=3)
 
         self.label = tk.Label(self, text="Geen loten verkocht", font=LARGE_FONT)
         self.label.grid(row=1, columnspan=2)
@@ -166,8 +187,8 @@ class PageTicketDraw(tk.Frame):
         else:
             self.label_ticket['font'] = LARGE_FONT
             self.label_ticket['text'] = 'De loten zijn op.'
-            self.label_ticket['text'] = 'Stop de loterij'
-            self.label_ticket['command'] = self.controller.destroy
+            self.btn_draw['text'] = 'Stop de loterij'
+            self.btn_draw['command'] = self.controller.destroy
 
 app = Lottery()
 app.mainloop()
