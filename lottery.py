@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox
 import numpy as np
+from tkinter import messagebox
 import random
 
 LARGE_FONT = ("Roboto", 20)
@@ -48,6 +48,7 @@ class Lottery(tk.Tk):
 class PageTicketRanges(tk.Frame):
 
     def create_tickets(self):
+        self.ticket_numbers = np.array([])
         ticket_ranges = []
         for entry in self.entry_ticket_ranges:
             from_value = entry[0].get()
