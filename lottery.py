@@ -14,7 +14,7 @@ class Lottery(tk.Tk):
         self.title("Loterij")
         self.ticket_numbers = np.array([])
         container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
+        container.pack(fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
@@ -56,6 +56,9 @@ class PageTicketRanges(tk.Frame):
         label = tk.Label(self, text="Geef lotensets op", font=LARGE_FONT)
         label.pack(side=tk.TOP, fill="x", pady=10)
 
+        frame_filler_top = tk.Frame(self)
+        frame_filler_top.pack(side=tk.TOP, fill=tk.Y, expand=1)
+
         vcmd = (self.register(controller.integer_validation), '%S')
         self.entry_ticket_ranges = []
         for range_set in range_sets:
@@ -66,14 +69,17 @@ class PageTicketRanges(tk.Frame):
             entry_to = tk.Entry(frame, relief=tk.SUNKEN, width=50, justify='right',
                                 validate='key', vcmd=vcmd)
             self.entry_ticket_ranges.append([entry_from, entry_to])
-            frame.pack(side=tk.TOP)
+            frame.pack(side=tk.TOP, fill=tk.Y)
             label.pack(side=tk.LEFT)
             entry_from.pack(side=tk.LEFT)
             entry_to.pack(side=tk.RIGHT)
 
+        frame_filler_btm = tk.Frame(self)
+        frame_filler_btm.pack(side=tk.TOP, fill=tk.Y, expand=1)
+
         btn_start = tk.Button(self, text='Ga naar berekenen inkomsten >',
                               command=self.create_tickets)
-        btn_start.pack(side=tk.BOTTOM)
+        btn_start.pack(side=tk.BOTTOM, fill=tk.X)
 
     def create_tickets(self):
 
@@ -111,33 +117,35 @@ class PageIncome(tk.Frame):
         self.bind("<<ShowFrame>>", self.on_show_frame)
         self.ticket_numbers = self.controller.ticket_numbers
 
-        frame = tk.Frame(self)
-        frame.pack(side=tk.TOP)
-        btn_exit = tk.Button(frame, text='< Terug naar lot sets',
+        btn_exit = tk.Button(self, text='< Terug naar lot sets',
                              command=lambda: controller.show_frame(PageTicketRanges))
-        btn_exit.grid(row=0, columnspan=3)
+        btn_exit.pack(side=tk.TOP, fill=tk.X, expand=0)
 
-        self.label = tk.Label(frame, text="Geen loten verkocht", font=LARGE_FONT)
-        self.label.grid(row=1, columnspan=2)
+        frame_sold_qty = tk.Frame(self)
+        frame_sold_qty.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        self.label = tk.Label(frame_sold_qty, text="Geen loten verkocht", font=LARGE_FONT)
+        self.label.pack(fill=tk.BOTH, expand=1)
 
-        self.label_price = tk.Label(frame, text="Prijs per lot", relief=tk.RIDGE)
-        self.label_price.grid(row=2, column=0)
-
+        frame_price = tk.Frame(self)
+        frame_price.pack(side=tk.TOP, fill=tk.Y, expand=1)
+        label_price = tk.Label(frame_price, text="Prijs per lot: ", relief=tk.RIDGE,  width=15)
+        label_price.pack(side=tk.LEFT)
         vcmd = (self.register(controller.money_validation), '%S')
-        self.entry_price = tk.Entry(frame, relief=tk.SUNKEN, width=50, justify='right',
+        self.entry_price = tk.Entry(frame_price, relief=tk.SUNKEN, width=25, justify='right',
                                     validate='key', vcmd=vcmd)
-        self.entry_price.grid(row=2, column=1)
-
-        btn_calculate = tk.Button(frame, text='Bereken inkomsten',
+        self.entry_price.pack(side=tk.LEFT, fill=tk.X, expand=0)
+        btn_calculate = tk.Button(frame_price, text='Bereken inkomsten',
                                   command=self.calculate_income)
-        btn_calculate.grid(row=3, column=1)
+        btn_calculate.pack(side=tk.RIGHT, fill=tk.X, expand=0)
 
-        self.label_income = tk.Label(frame, text="Geen inkomsten", font=LARGE_FONT)
-        self.label_income.grid(row=4, columnspan=2)
+        frame_price_total = tk.Frame(self)
+        frame_price_total.pack(side=tk.TOP, fill=tk.Y, expand=1)
+        self.label_income = tk.Label(frame_price_total, text="Geen inkomsten", font=LARGE_FONT)
+        self.label_income.pack(fill=tk.BOTH, expand=1)
 
-        btn_start = tk.Button(frame, text='Start loterij >',
+        btn_start = tk.Button(self, text='Start loterij >',
                               command=lambda: controller.show_frame(PageTicketDraw))
-        btn_start.grid(row=5, column=1)
+        btn_start.pack(side=tk.BOTTOM, fill=tk.X)
 
     def on_show_frame(self, event):
         self.ticket_numbers = self.controller.ticket_numbers
@@ -161,10 +169,10 @@ class PageTicketDraw(tk.Frame):
 
         self.btn_draw = tk.Button(self, text='Trek lot',
                                   command=self.draw_ticket)
-        self.btn_draw.pack()
+        self.btn_draw.pack(side=tk.TOP, fill=tk.X, expand=0)
 
         self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
-        self.label_ticket.pack(pady=10, padx=10)
+        self.label_ticket.pack(fill=tk.BOTH, expand=1)
 
     def draw_ticket(self):
         qty_tickets = self.controller.ticket_numbers.shape[0]
@@ -181,10 +189,14 @@ class PageTicketDraw(tk.Frame):
             self.label_ticket['text'] = 'De loten zijn op.'
             self.btn_draw['text'] = 'Stop de loterij'
             self.btn_draw['command'] = self.controller.destroy
+            if messagebox.askokcancel("Exit", "Wil je het programma afsluiten?"):
+                self.controller.destroy()
 
-app = Lottery()
-app.mainloop()
+
+def main():
+    app = Lottery()
+    app.mainloop()
 
 
-#     btn_start = Button(frame_bottom, text='Start loterij', command=form_lottery_close)
-
+if __name__ == '__main__':
+    main()
