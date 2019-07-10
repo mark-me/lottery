@@ -17,6 +17,7 @@ class Lottery(tk.Tk):
         container.pack(fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
+        self.state("zoomed")
 
         self.frames = {}
         for F in (PageTicketRanges, PageIncome, PageTicketDraw):
@@ -167,9 +168,15 @@ class PageTicketDraw(tk.Frame):
         self.controller = controller
         self.qty_draws = 0
 
-        self.btn_draw = tk.Button(self, text='Trek lot',
+        frame_btns = tk.Frame(self)
+        frame_btns.pack(side=tk.TOP, fill=tk.X, expand=0)
+        self.btn_draw = tk.Button(frame_btns, text='Trek lot',
                                   command=self.draw_ticket)
-        self.btn_draw.pack(side=tk.TOP, fill=tk.X, expand=0)
+        self.btn_draw.pack(side=tk.LEFT, fill=tk.X, expand=1)
+
+        self.btn_quit = tk.Button(frame_btns, text='Stop loterij',
+                                  command=self.draw_ticket)
+        self.btn_quit.pack(side=tk.RIGHT, fill=tk.X, expand=1)
 
         self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
         self.label_ticket.pack(fill=tk.BOTH, expand=1)
@@ -187,10 +194,12 @@ class PageTicketDraw(tk.Frame):
         else:
             self.label_ticket['font'] = LARGE_FONT
             self.label_ticket['text'] = 'De loten zijn op.'
-            self.btn_draw['text'] = 'Stop de loterij'
-            self.btn_draw['command'] = self.controller.destroy
-            if messagebox.askokcancel("Exit", "Wil je het programma afsluiten?"):
-                self.controller.destroy()
+            self.btn_draw['text'] = '<< Start loterij opnieuw'
+            self.btn_draw['command'] = self.controller.show_frame(PageTicketRanges)
+
+    def quit_lottery(self):
+        if messagebox.askokcancel("Exit", "Weet je zeker dat je het programma wil afsluiten?"):
+            self.controller.destroy()
 
 
 def main():
