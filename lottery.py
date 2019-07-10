@@ -175,7 +175,7 @@ class PageTicketDraw(tk.Frame):
         self.btn_draw.pack(side=tk.LEFT, fill=tk.X, expand=1)
 
         self.btn_quit = tk.Button(frame_btns, text='Stop loterij',
-                                  command=self.draw_ticket)
+                                  command=self.controller.destroy)
         self.btn_quit.pack(side=tk.RIGHT, fill=tk.X, expand=1)
 
         self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
@@ -194,8 +194,9 @@ class PageTicketDraw(tk.Frame):
         else:
             self.label_ticket['font'] = LARGE_FONT
             self.label_ticket['text'] = 'De loten zijn op.'
-            self.btn_draw['text'] = '<< Start loterij opnieuw'
-            self.btn_draw['command'] = self.controller.show_frame(PageTicketRanges)
+            self.qty_draws = 0
+            messagebox.showinfo("Loterij", "De loten zijn op. Sluit het programma af")
+            self.btn_draw.pack_forget()
 
     def quit_lottery(self):
         if messagebox.askokcancel("Exit", "Weet je zeker dat je het programma wil afsluiten?"):
