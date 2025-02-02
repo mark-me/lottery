@@ -1,49 +1,9 @@
 import tkinter as tk
+
 import numpy as np
-from tkinter import messagebox
-import random
 
-LARGE_FONT = ("Roboto", 20)
-TICKET_FONT = ("Roboto", 240)
-
-
-class Lottery(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        self.title("Loterij")
-        self.ticket_numbers = np.array([])
-        container = tk.Frame(self)
-        container.pack(fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
-        self.state("normal")
-
-        self.frames = {}
-        for F in (PageTicketRanges, PageIncome, PageTicketDraw):
-            frame = F(container, self)
-            self.frames[F] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
-
-        self.ticket_ranges = []
-
-        self.show_frame(PageTicketRanges)
-
-    def show_frame(self, cont):
-        frame = self.frames[cont]
-        frame.event_generate("<<ShowFrame>>")
-        frame.tkraise()
-
-    def money_validation(self, S):
-        if S in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ","]:
-            return True
-        self.bell()
-        return False
-
-    def integer_validation(self, S):
-        if S in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
-            return True
-        self.bell()
-        return False
+from config_ui import LARGE_FONT
+from page_ticket_draw import PageTicketDraw
 
 
 class PageTicketRanges(tk.Frame):
@@ -105,7 +65,7 @@ class PageTicketRanges(tk.Frame):
             elif from_value != "" and to_value == "":
                 ticket_ranges.append(int(from_value))
             elif from_value == "" and to_value != "":
-                messagebox.showinfo(
+                tk.messagebox.showinfo(
                     "Fout",
                     "Er kan niet alleen een eindpunt van een range worden opgegeven",
                 )
@@ -122,7 +82,7 @@ class PageTicketRanges(tk.Frame):
             np.unique(self.controller.ticket_numbers).shape[0]
             != self.controller.ticket_numbers.shape[0]
         ):
-            messagebox.showinfo(
+            tk.messagebox.showinfo(
                 "Fout", "Er kunnen geen overlappende ranges worden opgegeven"
             )
             return
@@ -197,56 +157,3 @@ class PageIncome(tk.Frame):
         amt_income = qty_tickets * amt_price
         amt_income = ("%.2f" % amt_income).replace(".", ",")
         self.label_income["text"] = "Inkomsten loten verkoop : €" + amt_income
-
-
-class PageTicketDraw(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.qty_draws = 0
-
-        frame_btns = tk.Frame(self)
-        frame_btns.pack(side=tk.TOP, fill=tk.X, expand=0)
-        self.btn_draw = tk.Button(frame_btns, text="Trek lot", command=self.draw_ticket)
-        self.btn_draw.pack(side=tk.LEFT, fill=tk.X, expand=1)
-
-        self.btn_quit = tk.Button(
-            frame_btns, text="Stop loterij", command=self.controller.destroy
-        )
-        self.btn_quit.pack(side=tk.RIGHT, fill=tk.X, expand=1)
-
-        self.label_ticket = tk.Label(self, text=" ", font=TICKET_FONT)
-        self.label_ticket.pack(fill=tk.BOTH, expand=1)
-
-    def draw_ticket(self):
-        qty_tickets = self.controller.ticket_numbers.shape[0]
-        if qty_tickets > 0:
-            self.qty_draws = self.qty_draws + 1
-
-            idx_ticket = random.randint(0, qty_tickets - 1)
-            drawn_ticket = self.controller.ticket_numbers[idx_ticket]
-            self.controller.ticket_numbers = np.delete(
-                self.controller.ticket_numbers, idx_ticket
-            )
-            self.label_ticket["text"] = int(drawn_ticket)
-        else:
-            self.label_ticket["font"] = LARGE_FONT
-            self.label_ticket["text"] = "De loten zijn op."
-            self.qty_draws = 0
-            messagebox.showinfo("Loterij", "De loten zijn op. Sluit het programma af")
-            self.btn_draw.pack_forget()
-
-    def quit_lottery(self):
-        if messagebox.askokcancel(
-            "Exit", "Weet je zeker dat je het programma wil afsluiten?"
-        ):
-            self.controller.destroy()
-
-
-def main():
-    app = Lottery()
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()
